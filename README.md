@@ -1,2 +1,2 @@
 # RDS-config
-Whats my RDS config look like
+Detect and list RDS configurations
