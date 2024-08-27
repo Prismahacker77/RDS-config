@@ -1,4 +1,5 @@
-import boto3 # type: ignore
+import boto3
+from prettytable import PrettyTable
 
 def scan_rds_instances():
     ec2_client = boto3.client('ec2')
@@ -16,12 +17,12 @@ def scan_rds_instances():
             engine = db['Engine']
             port = db['Endpoint']['Port']
             az = db['AvailabilityZone']
+            multi_az = db['MultiAZ']
             publicly_accessible = db['PubliclyAccessible']
             storage_encrypted = db['StorageEncrypted']
             vpc_id = db.get('DBSubnetGroup', {}).get('VpcId', 'N/A')
             retention_period = db['BackupRetentionPeriod']
             
-            # Retrieve security groups associated with the RDS instance
             security_groups = [sg['VpcSecurityGroupId'] for sg in db['VpcSecurityGroups']]
 
             rds_info.append({
@@ -29,7 +30,7 @@ def scan_rds_instances():
                 'Status': db_status,
                 'Engine': engine,
                 'Region': region,
-                'AZ': az,
+                'AZ': az if not multi_az else 'Multi-AZ',
                 'Port': port,
                 'VPCID': vpc_id,
                 'SecurityGroups': security_groups,
@@ -38,17 +39,24 @@ def scan_rds_instances():
                 'RetentionPeriod': retention_period
             })
 
-            print(f"DB Identifier: {db_identifier}")
-            print(f"Status: {db_status}")
-            print(f"Engine: {engine}")
-            print(f"Region: {region}, AZ: {az}")
-            print(f"Port: {port}")
-            print(f"VPC ID: {vpc_id}")
-            print(f"Security Groups: {security_groups}")
-            print(f"Publicly Accessible: {publicly_accessible}")
-            print(f"Storage Encrypted: {storage_encrypted}")
-
     return rds_info
 
+def print_rds_info_table(rds_info):
+    table = PrettyTable()
+    table.field_names = [
+        "DB Identifier", "Status", "Engine", "Region", "AZ/Multi-AZ", "Port", 
+        "VPC ID", "Publicly Accessible", "Storage Encrypted", "Retention Period", "Security Groups"
+    ]
+
+    for info in rds_info:
+        table.add_row([
+            info['DBIdentifier'], info['Status'], info['Engine'], info['Region'], 
+            info['AZ'], info['Port'], info['VPCID'], info['PubliclyAccessible'], 
+            info['StorageEncrypted'], info['RetentionPeriod'], ', '.join(info['SecurityGroups'])
+        ])
+
+    print(table)
+
 if __name__ == "__main__":
-    scan_rds_instances()
+    rds_info = scan_rds_instances()
+    print_rds_info_table(rds_info)
