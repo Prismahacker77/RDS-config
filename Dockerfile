@@ -10,5 +10,8 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Set environment variables for AWS region
+ENV AWS_DEFAULT_REGION=us-east-1
+
 # Run the script when the container launches
 CMD ["python", "askmeabout-rds.py"]
