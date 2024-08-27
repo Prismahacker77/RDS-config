@@ -1,5 +1,5 @@
 import boto3
-from prettytable import PrettyTable
+import PrettyTable
 
 def scan_rds_instances():
     ec2_client = boto3.client('ec2')
