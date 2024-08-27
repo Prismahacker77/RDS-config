@@ -1,8 +1,9 @@
-import boto3
+import boto3 # type: ignore
 
 def scan_rds_instances():
     ec2_client = boto3.client('ec2')
     regions = [region['RegionName'] for region in ec2_client.describe_regions()['Regions']]
+    rds_info = []
 
     for region in regions:
         print(f"Scanning region: {region}")
@@ -23,6 +24,20 @@ def scan_rds_instances():
             # Retrieve security groups associated with the RDS instance
             security_groups = [sg['VpcSecurityGroupId'] for sg in db['VpcSecurityGroups']]
 
+            rds_info.append({
+                'DBIdentifier': db_identifier,
+                'Status': db_status,
+                'Engine': engine,
+                'Region': region,
+                'AZ': az,
+                'Port': port,
+                'VPCID': vpc_id,
+                'SecurityGroups': security_groups,
+                'PubliclyAccessible': publicly_accessible,
+                'StorageEncrypted': storage_encrypted,
+                'RetentionPeriod': retention_period
+            })
+
             print(f"DB Identifier: {db_identifier}")
             print(f"Status: {db_status}")
             print(f"Engine: {engine}")
@@ -32,8 +47,8 @@ def scan_rds_instances():
             print(f"Security Groups: {security_groups}")
             print(f"Publicly Accessible: {publicly_accessible}")
             print(f"Storage Encrypted: {storage_encrypted}")
-            print(f"Backup Retention Period: {retention_period} days")
-            print("-" * 60)
+
+    return rds_info
 
 if __name__ == "__main__":
     scan_rds_instances()
