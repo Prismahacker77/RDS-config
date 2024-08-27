@@ -1,5 +1,5 @@
 import boto3
-import PrettyTable
+from prettytable import PrettyTable
 
 def scan_rds_instances():
     ec2_client = boto3.client('ec2')
@@ -60,3 +60,4 @@ def print_rds_info_table(rds_info):
 if __name__ == "__main__":
     rds_info = scan_rds_instances()
     print_rds_info_table(rds_info)
+    
